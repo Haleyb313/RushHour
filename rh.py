@@ -13,7 +13,7 @@ screen_width = 800
 screen_height = 800
 
 # set the grid block size
-# remember, the grid is 8 blocks x 8 blocks
+# the grid is 8 blocks x 8 blocks
 block = 100
 
 # set up a few game parameters
@@ -21,13 +21,14 @@ selected = None
 moving = False
 btn_do = ""
 level = 0
+state = "home" # start the game on the home screen
 
 # build screen
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Rush Hour')
 
 # load background image
-image_folder = r'C:\Users\haley\OneDrive\Documents\Haley Stuff\Python - Haley projects\Breakout\img'
+image_folder = r''
 
 # background image
 bg = pygame.image.load(str(image_folder + '\\bg.png'))
@@ -266,7 +267,8 @@ btn_group = pygame.sprite.Group()
 car_group = pygame.sprite.Group()
 
 
-# load buttons into button group
+# functions to load designated buttons into button group
+# first get the button list for screen, then add to group
 
 def get_btn_list(appear):
     btn_list = []
@@ -276,7 +278,7 @@ def get_btn_list(appear):
         lev2_btn = btn((block * 3) + 5, (block * 6) + 5, lev2_img, "lev2")
         lev3_btn = btn((block * 5) + 5, (block * 6) + 5, lev3_img, "lev3")
 
-        btn_list.append([lev1_btn, lev2_btn, lev3_btn])
+        btn_list.extend([lev1_btn, lev2_btn, lev3_btn])
 
     if appear == "game_scr":
         home_btn = btn(screen_width - 95, 5, home_btn_img, "home")
@@ -303,7 +305,9 @@ def update_btn_group(btn_list):
     for i in btn_list:
         btn_group.add(i)
 
-# determine level
+# functions to load designated cars into car group
+# first get the car list for the level, then add to group
+
 def get_level_list(level):
     level_list = []
 
@@ -366,29 +370,27 @@ def update_car_group(level_list):
         car_group.add(i)
 
 
-# prep the background
+# draw the background
 def draw_bg():
     screen.blit(bg, (0, 0))
 
-
+# draw the home screen
 def draw_hm_scr():
     screen.blit(hm_img, (block, block))
 
-
+# draw the you won screen
 def draw_win():
     center_x = (bg_rect.width - win_rect.width) // 2  # 800 - 450 / 2
     center_y = (bg_rect.height - win_rect.height) // 2  # 800 - 290 / 2
     screen.blit(win, (center_x, center_y))
 
-
+# draw level text in the corner
 def draw_level_text(level):
     myfont = pygame.font.SysFont('Fixedsys', 30)
     textsurface = myfont.render("LEVEL " + str(level), False, (255, 242, 0))
     screen.blit(textsurface, (50, 10))
 
-
-state = "home"
-
+    
 # start the game!
 run = True
 while run:
@@ -424,7 +426,7 @@ while run:
                         elif btn_do == "lev3":
                             level = 3
 
-                        # get cars ready
+                        # if a level btn was clicked, get that level's car group ready
                         get_level = get_level_list(level)
                         update_car_group(get_level)
 
@@ -432,7 +434,7 @@ while run:
                         state = "game"
 
                     if btn_do == "reset":
-                        state = "game" # included b/c we might be resetting from the win screen
+                        state = "game" # included b/c we might be resetting from the win screen, which has a state of "won"
                         for car in car_group:
                             car.reset()
 
@@ -445,16 +447,15 @@ while run:
 
         if state == "game":
             appear = "game_scr"
-            print(level)
 
             # draw background and level text
             draw_bg()
             draw_level_text(level)
 
-            # draw the cars determined by the level choice
+            # draw the cars as determined by the level choice from the button clicked
             car_group.draw(screen)
 
-            # get screen appearance, build the button group, then draw that group
+            # draw the buttons as determined by the screen appearance
             btns = get_btn_list(appear)
             update_btn_group(btns)
             btn_group.draw(screen)
@@ -474,21 +475,21 @@ while run:
 
 
             elif event.type == MOUSEMOTION and moving:
-                # b/c I want the player red car to be able to leave the grid if they win...
+                # b/c I want the player red car to be able to leave the grid if they win
+                    # remember, move_rng [left_limit, right_limit, top_limit, bottom_limit]
                 if selected.is_player() == True and move_rng[1] == 700:
                     move_rng[1] = 800
                 else:
                     selected.move(move_rng)
 
-            elif event.type == MOUSEBUTTONUP:
-                if is_car == True:
-                    selected.snap()  # only need to snap car to place if it is a car
-                    moving = False
+            elif event.type == MOUSEBUTTONUP and is_car:
+                selected.snap()  # only need to snap car to place if it is a car
+                moving = False
 
-                    # check if game won
-                    check_win = selected.is_win()
-                    if check_win == True:
-                        state = "won"
+                # check if game won
+                check_win = selected.is_win()
+                if check_win == True:
+                    state = "won"
 
         if state == "home":
             draw_bg()
