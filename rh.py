@@ -155,9 +155,6 @@ class car(pygame.sprite.Sprite):
                 if (abs(car.rect.top - car.rect.bottom) == 300):  # aka is it 3 blocks long: a truck
                     if car.rect.midleft[1] - (block // 2) == self.rect.topright[1]:
                         impact_r.append(car.rect.midleft[0])
-                # print("length = " + str(abs(car.rect.right - car.rect.left)))
-                # print("midleft y = " +str(car.rect.midleft[1] - (block//2)))
-                # print("x limit should be = " + str(car.rect.midleft[0]))
 
                 if (car.rect.bottomleft[1] - block) == self.rect.topright[1]:
                     impact_r.append(car.rect.bottomleft[0])
